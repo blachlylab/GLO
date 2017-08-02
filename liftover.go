@@ -40,9 +40,10 @@ func (self *LiftOver) Lift(source_build, target_build string, target *ChainInter
         if atree_exists {
             for _, res := range (*atree).Query(target) {
                 // Use type assertion to specify that the Interval
-                // being returned is a *ChainBlock.
-                match := res.(*ChainBlock).Target
-                overlaps = append(overlaps, match)
+                // being returned is a *ChainBlock, and a call to
+                // GetOverLap() to get the overlapped interval.
+                overlap := res.(*ChainBlock).GetOverlap(target)
+                overlaps = append(overlaps, overlap)
             }
         }
     }

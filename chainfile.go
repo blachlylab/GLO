@@ -41,7 +41,7 @@ func (cf *ChainFile) Load() {
                     cf.add(chain)
                 }
                 chain = new(Chain)
-                chain.fromString(line)
+                chain.FromString(line)
 
             } else if string(line[0]) != "#" {
                 // Load mapping blocks for this Chain

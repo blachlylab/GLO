@@ -34,10 +34,10 @@ func (cb *ChainBlock) String() string {
 
 
 // GetOverlap returns a ChainInterval object representing the
-// overlapped interval at the target contig
-func (cb *ChainBlock) GetOverlap(contig string, start, end int64) *ChainInterval {
+// overlapped with the input region.
+func (cb *ChainBlock) GetOverlap(region *ChainInterval) *ChainInterval { 
     ci := new(ChainInterval)
-    if contig != cb.Source.Contig {
+    if region.Contig != cb.Source.Contig {
         // No overlap due to contig mismatch
         return nil
     }
@@ -46,15 +46,15 @@ func (cb *ChainBlock) GetOverlap(contig string, start, end int64) *ChainInterval
 
     var start_adj int64 = 0
 
-    if start > cb.Source.Start {
-        start_adj = start - cb.Source.Start
+    if region.Start > cb.Source.Start {
+        start_adj = region.Start - cb.Source.Start
     }
     ci.Start = cb.Target.Start + start_adj
 
 
-    size := end - start
-    if end > cb.Source.End {
-        size -= (end - cb.Source.End)
+    size := region.End - region.Start
+    if region.End > cb.Source.End {
+        size -= (region.End - cb.Source.End)
     }
     ci.End = ci.Start + size
 
@@ -95,16 +95,16 @@ func (c *Chain) String() string {
 
 
 // Populates the target Chain struct from the data in the input string.
-func (c *Chain) fromString(s string) {
+func (c *Chain) FromString(s string) {
     //chain 20851231461 chr1 249250621 + 10000 249240621 chr1 248956422 + 10000 248946422 2
     cols := strings.Split(s, " ")
     c.Score = str2int64(cols[1])
-    c.SourceName = cols[2]
+    c.SourceName = strings.ToLower(cols[2])
     c.SourceSize = str2int64(cols[3])
     c.SourceStrand = cols[4]
     c.SourceStart = str2int64(cols[5])
     c.SourceEnd = str2int64(cols[6])
-    c.TargetName = cols[7]
+    c.TargetName = strings.ToLower(cols[7])
     c.TargetSize = str2int64(cols[8])
     c.TargetStrand = cols[9]
     c.TargetStart = str2int64(cols[10])
@@ -149,13 +149,11 @@ func (c *Chain) load_blocks(s *bufio.Scanner){
         tfrom += size + tgap
 
         c.Blocks = append(c.Blocks, block)
-        //fmt.Printf(">[%d]\t%s\n", len(cols), cols)
+     
         if !s.Scan() {
-            //fmt.Println("break")
             break
         }
         cols = strings.Split(strings.TrimSpace(s.Text()), "\t")
-        //fmt.Printf("number of cols read in: %d\n", len(cols))
     }
     if len(cols) != 1 {
         fmt.Printf("Error: Expected line with a single value, got \"%s\"\n", cols)
@@ -178,4 +176,5 @@ func (c *Chain) load_blocks(s *bufio.Scanner){
     block.Target = ti
 
     c.Blocks = append(c.Blocks, block)
+
 }
