@@ -1,4 +1,4 @@
-package goLiftOver
+package glo
 
 import (
     "os"
@@ -8,19 +8,19 @@ import (
 
 
 type ChainFile struct {
-    source_build, target_build, fp string
-    chains map[string][]*Chain
+    SourceBuild, TargetBuild, Filepath string
+    Chains map[string][]*Chain
 }
 
 func (cf *ChainFile) add(chain *Chain) {
-    contig := chain.source_name
-    cf.chains[contig] = append(cf.chains[contig], chain)
+    contig := chain.SourceName
+    cf.Chains[contig] = append(cf.Chains[contig], chain)
 }
 
 func (cf *ChainFile) Load() {
-    cf.chains = make(map[string][]*Chain)
+    cf.Chains = make(map[string][]*Chain)
 
-    f, err := os.Open(cf.fp)
+    f, err := os.Open(cf.Filepath)
     if err != nil {
         panic(err)
     } 

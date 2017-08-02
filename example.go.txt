@@ -1,0 +1,25 @@
+package glo
+
+import (
+    "fmt"
+)
+
+func main() {
+    liftover := new(LiftOver)
+    liftover.Init()
+
+    liftover.LoadChainFile("hg19", "hg38", "hg19ToHg38.over.chain")
+
+
+    target := ChainInterval{Contig: "chrX", Start: 115149220, End: 115149335}
+    o := liftover.Lift("hg19", "hg38", &target)
+    fmt.Println(o)
+
+
+    t2 := ChainInterval{Contig: "chr1", Start: 167376, End: 267376}
+    o = liftover.Lift("hg19", "hg38", &t2)
+    for _, x := range o {
+        fmt.Println(x)
+    }
+
+}

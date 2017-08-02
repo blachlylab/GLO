@@ -1,4 +1,4 @@
-package goLiftOver
+package glo
 
 import (
     "hash/fnv"
@@ -8,23 +8,23 @@ import "github.com/Workiva/go-datastructures/augmentedtree"
 
 // Implement Interval interface functions for ChainInterval
 func (ci ChainInterval) LowAtDimension(dim uint64) int64 {
-    return ci.start
+    return ci.Start
 }
 
 func (ci ChainInterval) HighAtDimension(dim uint64) int64 {
-    return ci.end
+    return ci.End
 }
 
 func (ci ChainInterval) OverlapsAtDimension(iv augmentedtree.Interval, dim uint64) bool {
-    if (iv.LowAtDimension(dim) <= ci.start) && (ci.end <= iv.HighAtDimension(dim)) {
+    if (iv.LowAtDimension(dim) <= ci.Start) && (ci.End <= iv.HighAtDimension(dim)) {
         // self       ================
         // other   =====================
         return true
-    } else if (ci.start <= iv.LowAtDimension(dim)) && (iv.LowAtDimension(dim) <= ci.end) {
+    } else if (ci.Start <= iv.LowAtDimension(dim)) && (iv.LowAtDimension(dim) <= ci.End) {
         // self      ================
         // other         ===============
         return true
-    } else if (ci.start <= iv.HighAtDimension(dim)) && (iv.HighAtDimension(dim) <= ci.end) {
+    } else if (ci.Start <= iv.HighAtDimension(dim)) && (iv.HighAtDimension(dim) <= ci.End) {
         // self      ===============
         // other  =================
         return true
@@ -42,15 +42,15 @@ func (ci ChainInterval) ID() uint64 {
 // Implement Interval interface functions for ChainBlock by taking advantage
 // of the implemented functions for ChainInterval
 func (cb *ChainBlock) LowAtDimension(dim uint64) int64 {
-    return cb.source.LowAtDimension(dim)
+    return cb.Source.LowAtDimension(dim)
 }
 
 func (cb *ChainBlock) HighAtDimension(dim uint64) int64 {
-    return cb.source.HighAtDimension(dim)
+    return cb.Source.HighAtDimension(dim)
 }
 
 func (cb *ChainBlock) OverlapsAtDimension(iv augmentedtree.Interval, dim uint64) bool {
-    return cb.source.OverlapsAtDimension(iv, dim)
+    return cb.Source.OverlapsAtDimension(iv, dim)
 }
 
 func (cb *ChainBlock) ID() uint64 {

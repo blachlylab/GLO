@@ -1,4 +1,4 @@
-package goLiftOver
+package glo
 
 import (
     "fmt"
@@ -9,27 +9,27 @@ import (
 
 // Represents a contig:start-end structure.
 type ChainInterval struct {
-    contig string
-    start int64
-    end int64
+    Contig string
+    Start int64
+    End int64
 }
 
 // String output function for ChainInterval type
 func (ci *ChainInterval) String() string {
-    return fmt.Sprintf("%s:%d-%d", ci.contig, ci.start, ci.end)
+    return fmt.Sprintf("%s:%d-%d", ci.Contig, ci.Start, ci.End)
 }
 
 // Represents the source -> target mapping between
 // two ChainIntervals, e.g.
 // chrA:10000-20000 -> chrB:20123-30123
 type ChainBlock struct {
-    source *ChainInterval
-    target *ChainInterval
+    Source *ChainInterval
+    Target *ChainInterval
 }
 
 // String output fuction for ChainBlock type
 func (cb *ChainBlock) String() string {
-    return fmt.Sprintf("%s -> %s", cb.source, cb.target)
+    return fmt.Sprintf("%s -> %s", cb.Source, cb.Target)
 }
 
 
@@ -37,27 +37,26 @@ func (cb *ChainBlock) String() string {
 // overlapped interval at the target contig
 func (cb *ChainBlock) GetOverlap(contig string, start, end int64) *ChainInterval {
     ci := new(ChainInterval)
-    if contig != cb.source.contig {
+    if contig != cb.Source.Contig {
         // No overlap due to contig mismatch
         return nil
     }
 
-    ci.contig = cb.target.contig
-
+    ci.Contig = cb.Target.Contig
 
     var start_adj int64 = 0
 
-    if start > cb.source.start {
-        start_adj = start - cb.source.start
+    if start > cb.Source.Start {
+        start_adj = start - cb.Source.Start
     }
-    ci.start = cb.target.start + start_adj
+    ci.Start = cb.Target.Start + start_adj
 
 
     size := end - start
-    if end > cb.source.end {
-        size -= (end - cb.source.end)
+    if end > cb.Source.End {
+        size -= (end - cb.Source.End)
     }
-    ci.end = ci.start + size
+    ci.End = ci.Start + size
 
     return ci
 }
@@ -67,26 +66,28 @@ func (cb *ChainBlock) GetOverlap(contig string, start, end int64) *ChainInterval
 // the fields from the header line and each block of mappings
 // for that chain.
 type Chain struct {
-    score int64
-    source_name string
-    source_size int64
-    source_strand string
-    source_start int64
-    source_end int64
-    target_name string
-    target_size int64  
-    target_strand string
-    target_start int64
-    target_end int64
-    id string
-    blocks []*ChainBlock
+    Score int64
+    SourceName string
+    SourceSize int64
+    SourceStrand string
+    SourceStart int64
+    SourceEnd int64
+    TargetName string
+    TargetSize int64  
+    TargetStrand string
+    TargetStart int64
+    TargetEnd int64
+    ID string
+    Blocks []*ChainBlock
 }
 
 // String output function for Chain type.
 func (c *Chain) String() string {
     var output []string
-    output = append(output, fmt.Sprintf("%s:%d-%d to %s:%d-%d", c.source_name, c.source_start, c.source_end, c.target_name, c.target_start, c.target_end))
-    for _, x := range c.blocks {
+    output = append(output, 
+        fmt.Sprintf("%s:%d-%d to %s:%d-%d", c.SourceName, c.SourceStart, 
+            c.SourceEnd, c.TargetName, c.TargetStart, c.TargetEnd))
+    for _, x := range c.Blocks {
         output = append(output, fmt.Sprintf("> %s", x))
     }
     return strings.Join(output, "\n")
@@ -97,19 +98,19 @@ func (c *Chain) String() string {
 func (c *Chain) fromString(s string) {
     //chain 20851231461 chr1 249250621 + 10000 249240621 chr1 248956422 + 10000 248946422 2
     cols := strings.Split(s, " ")
-    c.score = str2int64(cols[1])
-    c.source_name = cols[2]
-    c.source_size = str2int64(cols[3])
-    c.source_strand = cols[4]
-    c.source_start = str2int64(cols[5])
-    c.source_end = str2int64(cols[6])
-    c.target_name = cols[7]
-    c.target_size = str2int64(cols[8])
-    c.target_strand = cols[9]
-    c.target_start = str2int64(cols[10])
-    c.target_end = str2int64(cols[11])
+    c.Score = str2int64(cols[1])
+    c.SourceName = cols[2]
+    c.SourceSize = str2int64(cols[3])
+    c.SourceStrand = cols[4]
+    c.SourceStart = str2int64(cols[5])
+    c.SourceEnd = str2int64(cols[6])
+    c.TargetName = cols[7]
+    c.TargetSize = str2int64(cols[8])
+    c.TargetStrand = cols[9]
+    c.TargetStart = str2int64(cols[10])
+    c.TargetEnd = str2int64(cols[11])
     if len(cols) == 13 {
-        c.id = cols[12]
+        c.ID = cols[12]
     }
 }
 
@@ -123,8 +124,8 @@ func (c *Chain) load_blocks(s *bufio.Scanner){
 
     cols = strings.Split(strings.TrimSpace(s.Text()), "\t")
 
-    sfrom := c.source_start
-    tfrom := c.target_start
+    sfrom := c.SourceStart
+    tfrom := c.TargetStart
     for len(cols) == 3 {
         size := str2int64(cols[0])
         sgap := str2int64(cols[1])
@@ -133,21 +134,21 @@ func (c *Chain) load_blocks(s *bufio.Scanner){
         block = new(ChainBlock)
 
         si = new(ChainInterval)
-        si.contig = c.source_name
-        si.start = sfrom
-        si.end = sfrom + size
-        block.source = si
+        si.Contig = c.SourceName
+        si.Start = sfrom
+        si.End = sfrom + size
+        block.Source = si
 
         ti = new(ChainInterval)
-        ti.contig = c.target_name
-        ti.start = tfrom
-        ti.end = tfrom + size
-        block.target = ti
+        ti.Contig = c.TargetName
+        ti.Start = tfrom
+        ti.End = tfrom + size
+        block.Target = ti
 
         sfrom += size + sgap
         tfrom += size + tgap
 
-        c.blocks = append(c.blocks, block)
+        c.Blocks = append(c.Blocks, block)
         //fmt.Printf(">[%d]\t%s\n", len(cols), cols)
         if !s.Scan() {
             //fmt.Println("break")
@@ -165,16 +166,16 @@ func (c *Chain) load_blocks(s *bufio.Scanner){
     block = new(ChainBlock)
         
     si = new(ChainInterval)
-    si.contig = c.source_name
-    si.start = sfrom
-    si.end = sfrom + size
-    block.source = si
+    si.Contig = c.SourceName
+    si.Start = sfrom
+    si.End = sfrom + size
+    block.Source = si
 
     ti = new(ChainInterval)
-    ti.contig = c.target_name
-    ti.start = tfrom
-    ti.end = tfrom + size
-    block.target = ti
+    ti.Contig = c.TargetName
+    ti.Start = tfrom
+    ti.End = tfrom + size
+    block.Target = ti
 
-    c.blocks = append(c.blocks, block)
+    c.Blocks = append(c.Blocks, block)
 }
