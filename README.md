@@ -5,17 +5,22 @@ by first initializing the LiftOver struct for the build-to-build mappings
 that will be lifted over, and then passing it requests as needed, e.g.
 
 
-// Initialize new object
+Initialize new object
+```go
 liftover := new(LiftOver)
 liftover.Init()
+```
 
-// Load in the hg19 to hg38 liftover
+Load in the hg19 to hg38 liftover
+```go
 liftover.LoadChainFile("hg19", "hg38", "hg19ToHg38.over.chain")
+```
 
 
-// Create a target for the liftover, request for it to be lifted
-// over from hg19 to hg38.
+Create a target for the liftover, request for it to be lifted over from hg19 to hg38.
+```go
 target := ChainInterval{Contig: "chrX", Start: 115149220, End: 115149335}
 o := liftover.Lift("hg19", "hg38", &target)
-fmt.Println(o)
+```
+
 
