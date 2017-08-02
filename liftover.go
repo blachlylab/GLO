@@ -1,7 +1,6 @@
 package glo
 
 import (
-    "fmt"
     "strconv"
 )
 
@@ -53,15 +52,12 @@ func (self *LiftOver) Lift(source_build, target_build string, target *ChainInter
 
 func (self *LiftOver) LoadChainFile(source, target, fp string) {
     // Initialize new ChainFile object.
-    fmt.Println("Initializing new ChainFile..")
     cf := new(ChainFile)
     cf.SourceBuild = source
     cf.TargetBuild = target
     cf.Filepath = fp
     // Load data
-    fmt.Println("Loading data into ChainFile..")
     cf.Load()
-    fmt.Println("Done.")
 
     // Generate key for tree mapping
     key := new(LiftOverKey)
@@ -87,9 +83,6 @@ func (self *LiftOver) LoadChainFile(source, target, fp string) {
     }
 
     self.Trees[*key] = tree
-
-
-
 }
 
 
