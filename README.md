@@ -1,3 +1,5 @@
+![Go LiftOver](glologo.png)
+
 # Go LiftOver
 
 Once the package is imported, the liftover capability can be easily utilized
