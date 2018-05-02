@@ -31,6 +31,7 @@ liftover.LoadChainFile("hg19", "hg38", "hg19ToHg38.over.chain")
 
 // Generate a ChainInterval struct that is used to pass in the request. The
 // response will also be returned as a set of zero or more ChainIntervals.
+
 target := ChainInterval{Contig: "chrX", Strt: 115149220, End: 115149335}
 response := liftover.Lift("hg19", "hg38", &target)}
 
@@ -38,4 +39,8 @@ response := liftover.Lift("hg19", "hg38", &target)}
 // depending on if the specified interval had no equivalent in the 
 // target genome, had a unique overlap in the target genome, or was split
 // between multiple regions in the target genome.
+// Each ChainInterval object will have three relevant attributes:
+// .Contig 		The chromosome/contig of the interval (string)
+// .Start		The start of the genomic coordinate range (int64)
+// .End			The end of the genomic coordinate range (int64)
 ```

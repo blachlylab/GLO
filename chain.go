@@ -114,15 +114,20 @@ func (c *Chain) FromString(s string) {
     }
 }
 
-// Loads the data blocks (stored as ChainBlocks) for the target Chain
-// object, using the input Scanner object.
-
-func (c *Chain) load_blocks(s *bufio.Scanner){
+// Chain.load_blocks uses the input bufio.Reader to read mapping
+// block from the file, until the end of the chain is found. The
+// mapping blocks are added to the Chain as ChainBlock instances.
+func (c *Chain) load_blocks(reader *bufio.Reader){
     var cols []string
     var block *ChainBlock
     var si, ti *ChainInterval
 
-    cols = strings.Split(strings.TrimSpace(s.Text()), "\t")
+    line, err := reader.ReadString('\n')
+    if err != nil {
+        fmt.Printf("Chain.load_blocks() error: %s\n", err)
+        os.Exit(1)
+    }
+    cols = strings.Split(strings.TrimSpace(string(line)), "\t")
 
     sfrom := c.SourceStart
     tfrom := c.TargetStart
@@ -150,11 +155,19 @@ func (c *Chain) load_blocks(s *bufio.Scanner){
 
         c.Blocks = append(c.Blocks, block)
      
-        if !s.Scan() {
+        _, p_err := reader.Peek(1)
+        if p_err != nil {
+            // EOF
             break
         }
-        cols = strings.Split(strings.TrimSpace(s.Text()), "\t")
+        line, err = reader.ReadString('\n')
+        if err != nil {
+            fmt.Printf("Chain.load_blocks() error: %s\n", err)
+            os.Exit(1)           
+        }
+        cols = strings.Split(strings.TrimSpace(string(line)), "\t")
     }
+
     if len(cols) != 1 {
         fmt.Printf("Error: Expected line with a single value, got \"%s\"\n", cols)
         os.Exit(1)
@@ -178,3 +191,4 @@ func (c *Chain) load_blocks(s *bufio.Scanner){
     c.Blocks = append(c.Blocks, block)
 
 }
+
