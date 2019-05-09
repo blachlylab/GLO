@@ -8,23 +8,23 @@ import "github.com/Workiva/go-datastructures/augmentedtree"
 
 // Implement Interval interface functions for ChainInterval
 func (ci ChainInterval) LowAtDimension(dim uint64) int64 {
-    return ci.Start
+    return ci.start
 }
 
 func (ci ChainInterval) HighAtDimension(dim uint64) int64 {
-    return ci.End
+    return ci.end
 }
 
 func (ci ChainInterval) OverlapsAtDimension(iv augmentedtree.Interval, dim uint64) bool {
-    if (iv.LowAtDimension(dim) <= ci.Start) && (ci.End <= iv.HighAtDimension(dim)) {
+    if (iv.LowAtDimension(dim) <= ci.start) && (ci.end <= iv.HighAtDimension(dim)) {
         // self       ================
         // other   =====================
         return true
-    } else if (ci.Start <= iv.LowAtDimension(dim)) && (iv.LowAtDimension(dim) <= ci.End) {
+    } else if (ci.start <= iv.LowAtDimension(dim)) && (iv.LowAtDimension(dim) <= ci.end) {
         // self      ================
         // other         ===============
         return true
-    } else if (ci.Start <= iv.HighAtDimension(dim)) && (iv.HighAtDimension(dim) <= ci.End) {
+    } else if (ci.start <= iv.HighAtDimension(dim)) && (iv.HighAtDimension(dim) <= ci.end) {
         // self      ===============
         // other  =================
         return true
@@ -39,22 +39,22 @@ func (ci ChainInterval) ID() uint64 {
 }
 
 
-// Implement Interval interface functions for ChainBlock by taking advantage
+// Implement Interval interface functions for ChainLink by taking advantage
 // of the implemented functions for ChainInterval
-func (cb *ChainBlock) LowAtDimension(dim uint64) int64 {
-    return cb.Source.LowAtDimension(dim)
+func (link *ChainLink) LowAtDimension(dim uint64) int64 {
+    return link.reference.LowAtDimension(dim)
 }
 
-func (cb *ChainBlock) HighAtDimension(dim uint64) int64 {
-    return cb.Source.HighAtDimension(dim)
+func (link *ChainLink) HighAtDimension(dim uint64) int64 {
+    return link.reference.HighAtDimension(dim)
 }
 
-func (cb *ChainBlock) OverlapsAtDimension(iv augmentedtree.Interval, dim uint64) bool {
-    return cb.Source.OverlapsAtDimension(iv, dim)
+func (link *ChainLink) OverlapsAtDimension(iv augmentedtree.Interval, dim uint64) bool {
+    return link.reference.OverlapsAtDimension(iv, dim)
 }
 
-func (cb *ChainBlock) ID() uint64 {
+func (link *ChainLink) ID() uint64 {
     h := fnv.New64a()
-    h.Write([]byte(cb.String()))
+    h.Write([]byte(link.String()))
     return h.Sum64()
 }

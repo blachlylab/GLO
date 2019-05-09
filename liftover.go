@@ -9,40 +9,42 @@ import "github.com/Workiva/go-datastructures/augmentedtree"
 
 
 type LiftOverTree struct {
-    Source, Target string
-    Contigs map[string]*augmentedtree.Tree
+    reference, query string
+    contigs map[string]*augmentedtree.Tree
 }
 
 type LiftOverKey struct {
-    Source, Target string
+    reference, query string
 }
 
 type LiftOver struct {
-    Trees map[LiftOverKey]*LiftOverTree
+    trees map[LiftOverKey]*LiftOverTree
 }
 
 func (self *LiftOver) Init() {
-    self.Trees = make(map[LiftOverKey]*LiftOverTree)
+    self.trees = make(map[LiftOverKey]*LiftOverTree)
 }
 
-func (self *LiftOver) Lift(source_build, target_build string, target *ChainInterval) []*ChainInterval {
+func (self *LiftOver) Lift(reference_build, query_build string, query *ChainInterval) []*ChainInterval {
     var overlaps []*ChainInterval
 
     // Generate key for accessing the correct tree
     key := new(LiftOverKey)
-    key.Source = source_build
-    key.Target = target_build
+    key.reference = reference_build
+    key.query = query_build
 
-    lotree, lotree_exists := self.Trees[*key]
+    lotree, lotree_exists := self.trees[*key]
     if lotree_exists {
-        atree, atree_exists := lotree.Contigs[target.Contig]
+        atree, atree_exists := lotree.contigs[query.contig]
         if atree_exists {
-            for _, res := range (*atree).Query(target) {
+            for _, res := range (*atree).Query(query) {
                 // Use type assertion to specify that the Interval
                 // being returned is a *ChainBlock, and a call to
                 // GetOverLap() to get the overlapped interval.
-                overlap := res.(*ChainBlock).GetOverlap(target)
-                overlaps = append(overlaps, overlap)
+                overlap := res.(*ChainLink).GetOverlap(query)
+                if (overlap.size() > 0) {
+                    overlaps = append(overlaps, overlap)
+                }
             }
         }
     }
@@ -53,36 +55,36 @@ func (self *LiftOver) Lift(source_build, target_build string, target *ChainInter
 func (self *LiftOver) LoadChainFile(source, target, fp string) {
     // Initialize new ChainFile object.
     cf := new(ChainFile)
-    cf.SourceBuild = source
-    cf.TargetBuild = target
-    cf.Filepath = fp
+    cf.referenceBuild = source
+    cf.queryBuild = target
+    cf.filepath = fp
     // Load data
     cf.Load()
 
     // Generate key for tree mapping
     key := new(LiftOverKey)
-    key.Source = source
-    key.Target = target
+    key.reference = source
+    key.query = target
 
     tree := new(LiftOverTree)
-    tree.Source = source
-    tree.Target = target
-    tree.Contigs = make(map[string]*augmentedtree.Tree)
-    for contig, chains := range cf.Chains {
-        _, exists := tree.Contigs[contig]
+    tree.reference = source
+    tree.query = target
+    tree.contigs = make(map[string]*augmentedtree.Tree)
+    for contig, chains := range cf.chains {
+        _, exists := tree.contigs[contig]
         if !exists {
             t := augmentedtree.New(1)
-            tree.Contigs[contig] = &t
+            tree.contigs[contig] = &t
         }
-        atree := *(tree.Contigs[contig])
+        atree := *(tree.contigs[contig])
         for _, chain := range chains {
-            for _, block := range chain.Blocks {
-                atree.Add(block)
+            for _, link := range chain.links {
+                atree.Add(link)
             }
         }
     }
 
-    self.Trees[*key] = tree
+    self.trees[*key] = tree
 }
 
 
